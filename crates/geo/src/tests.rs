@@ -164,3 +164,37 @@ fn may_show_culls_far_away_rings_only() {
     assert!(g.may_show([130.0, -40.0, 150.0, -20.0]));
     assert!(v.may_show([f64::NAN, 0.0, 1.0, 1.0]));
 }
+
+#[test]
+fn lookup_cities_countries_and_coordinates() {
+    let near = |h: Option<Hit>, lon: f64, lat: f64| {
+        let p = h.map(|h| h.at()).unwrap_or([999.0, 999.0]);
+        assert!((p[0] - lon).abs() < 0.5 && (p[1] - lat).abs() < 0.5, "{p:?} vs {lon},{lat}");
+    };
+    near(lookup("Kyiv"), 30.5, 50.45);
+    near(lookup("paris"), 2.35, 48.86);
+    near(lookup("Valencia"), -67.98, 10.23); // the bigger one, in Venezuela
+    near(lookup("Valencia, Spain"), -0.40, 39.49);
+    near(lookup("Portland, Maine"), -70.25, 43.67);
+    near(lookup("cordoba, ESP"), -4.77, 37.88);
+    near(lookup("48.8566, 2.3522"), 2.3522, 48.8566);
+    near(lookup("2.35E 48.85N"), 2.35, 48.85);
+    near(lookup("33.9S, 151.2E"), 151.2, -33.9);
+    // France's anchor is in Europe, not French Guiana.
+    near(lookup("FRA"), 2.5, 46.6);
+    assert!(lookup("Atlantis").is_none());
+    assert!(lookup("").is_none());
+    assert!(lookup("91, 0").is_none());
+    assert!(lookup("NaN, 3").is_none());
+    let b = lookup("France").and_then(|h| h.bounds()).unwrap_or_default();
+    assert!(b[0] > -10.0, "main landmass only: {b:?}");
+}
+
+#[test]
+fn search_suggests_prefixes_first() {
+    let hits = places::search("ber", 5);
+    assert!(!hits.is_empty() && hits.len() <= 5);
+    assert!(hits[0].name().to_lowercase().starts_with("ber"));
+    assert!(places::search("", 5).is_empty());
+    assert!(places::parse_tsv("bad\nrow\twith\tfew\tcols\n\t\t\t\t\t1\t2\t3\t0\n").is_empty());
+}

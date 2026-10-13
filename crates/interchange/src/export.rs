@@ -113,7 +113,7 @@ fn unsupported(project: &Project, comp: &Comp, l: &Layer, format: TimelineFormat
         LayerSource::Text => Some("text layer"),
         LayerSource::Shape => Some("shape layer"),
         LayerSource::Model { .. } | LayerSource::Primitive { .. } => Some("3D model layer"),
-        LayerSource::Map => Some("map layer"),
+        LayerSource::Map | LayerSource::Route | LayerSource::Pin => Some("map layer"),
         LayerSource::Solid { item } => match project.item(*item).map(|i| &i.kind) {
             Some(ItemKind::Solid(s)) if s.width != comp.width || s.height != comp.height => Some("solid smaller or larger than the frame"),
             Some(ItemKind::Solid(_)) if format != TimelineFormat::Fcp7Xml => Some("solid (the format has no colour mattes)"),
@@ -196,7 +196,16 @@ fn plan(project: &Project, comp: &Comp, l: &Layer, opts: &ExportOptions) -> Plan
             _ => Plan::Native,
         },
         PrerenderMode::None => match (&l.source, why) {
-            (LayerSource::Text | LayerSource::Shape | LayerSource::Model { .. } | LayerSource::Primitive { .. } | LayerSource::Map, Some(w)) => Plan::Skip(w),
+            (
+                LayerSource::Text
+                | LayerSource::Shape
+                | LayerSource::Model { .. }
+                | LayerSource::Primitive { .. }
+                | LayerSource::Map
+                | LayerSource::Route
+                | LayerSource::Pin,
+                Some(w),
+            ) => Plan::Skip(w),
             (LayerSource::Solid { .. }, Some(w)) => Plan::Skip(w),
             (LayerSource::Comp { .. }, _) => Plan::Nest,
             _ => Plan::Native,

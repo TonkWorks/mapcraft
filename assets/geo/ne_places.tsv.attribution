@@ -1,0 +1,7 @@
+asset:        ne_places.tsv
+title:        Populated places, 1:10m (simple)
+author:       Natural Earth (naturalearthdata.com), Nathaniel Vaughn Kelso et al.
+source:       https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_10m_populated_places_simple.geojson
+license:      Public domain (Natural Earth terms of use: https://www.naturalearthdata.com/about/terms-of-use/)
+added:        2026-10-13 by MapCraft contributors (Claude agent, map core)
+notes:        Converted to tab-separated rows (name, ASCII name, admin-1 region, ISO 3166-1 alpha-3, country, latitude, longitude, population, national capital flag), sorted by population. Bundled by crates/geo for place lookup.

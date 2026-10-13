@@ -404,7 +404,7 @@ impl Doc<'_> {
                 self.ex.warn(format!("{name}: 3D model layers are not part of Lottie (layer exported as a hidden null)"));
                 hidden = true;
             }
-            LayerSource::Map => {
+            LayerSource::Map | LayerSource::Route | LayerSource::Pin => {
                 self.ex.warn(format!("{name}: map layers are not part of Lottie yet (layer exported as a hidden null; pre-render it to footage)"));
                 hidden = true;
             }

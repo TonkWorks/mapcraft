@@ -37,15 +37,38 @@ cargo run --release -p effectcraft-cli -- --empty run \
 cargo run --release -p effectcraft-cli -- --project ukraine.ecproj render --out ukraine.mp4 --format h264
 ```
 
-`projection` is `equirectangular`, `mercator` or `globe`. `place` and `highlight` take country names or
-ISO 3166-1 alpha-3 codes.
+A route with pins (a flight from London to Tokyo that draws on, pins popping in):
+
+```sh
+cargo run --release -p effectcraft-cli -- --empty run \
+  comp.new '{"name":"Route","width":1920,"height":1080,"frameRate":30,"duration":6}' \
+  layer.newMap '{"center":[70,45],"zoom":1.2,"projection":"mercator","highlight":["GBR","JPN"]}' \
+  layer.newPin '{"place":"London","popIn":0.6,"time":0.2}' \
+  layer.newRoute '{"places":["London","Moscow","Tokyo"],"drawOn":3,"time":0.8,"dashed":true,"color":"#ffffff"}' \
+  layer.newPin '{"place":"Tokyo","marker":"pin","popIn":0.6,"time":3.8}' \
+  --save-as route.ecproj
+```
+
+- `projection` is `equirectangular`, `mercator` or `globe`. `highlight` takes country names or
+  ISO 3166-1 alpha-3 codes.
+- A **place** is a country, a city ("Kyiv"; the bundled Natural Earth populated places, biggest
+  first), `"City, Country"` or `"City, Region"` to pick among same-named cities, or coordinates
+  as map apps copy them (`"48.8566, 2.3522"` is latitude, longitude; `"2.35E 48.85N"` works too).
+  JSON `center` and `[lon, lat]` pairs are longitude first. Unknown places are errors, never
+  guesses.
+- **Route** and **Pin** layers follow a Map layer (`map`, default the topmost one) and are
+  parented to it, so they stay on the geography while the camera flies and move with the map's
+  Transform. Routes: `path` `greatCircle` / `straight` / `arc`, Start / End trim (`drawOn`
+  keys End), dashes, arrowhead. Pins: `dot` / `pin` / `ring` / `none` marker, a haloed label that
+  flips sides at the frame edge, Reveal (`popIn` keys it).
+- The Map, Route and Pin options are in Effect Controls (every one keyframeable).
 
 ## Roadmap
 
 | Phase | Goal | Contents |
 |---|---|---|
 | 0. Spike ✅ | Prove the fork | `crates/geo`, Map layer source, world basemap, globe, `layer.newMap` / `map.set` / `map.flyTo`, native + web builds |
-| 1. Map core | Explainer-map comp | Level of detail (1:50m ✅; 1:10m, then vector tiles), graticule, country lift / glow / shadow, routes that draw on, pins and labels with collision avoidance, place search, style presets, Map panel in the UI |
+| 1. Map core | Explainer-map comp | Map panel in Effect Controls ✅, 1:50m detail ✅, place lookup ✅, routes that draw on ✅, pins and labels ✅; next: label collision avoidance, place search box, style presets, country lift / glow / shadow, graticule, 1:10m then vector tiles |
 | 2. Battle kit | War-map comp by hand | NATO APP-6 unit symbols, tapered curved attack arrows, front lines with teeth, territory over a date timeline (polygon morphs), date → comp-time mapping, CSV / KML / GPX import |
 | 3. Spec + Map Studio | Easy editing | BattleMap Spec + compiler, a simple beat-list workspace (click to place units, drag arrows, paint territory), "Open in Timeline", YouTube export presets (16:9, Shorts 9:16, alpha) |
 | 4. AI | English → map | LLM tool calls over the spec (bring your own key; Claude by default), place lookup, follow-up edits ("slow the second beat"), a prompt eval set |

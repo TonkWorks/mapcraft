@@ -1142,8 +1142,15 @@ pub fn show(app: &mut EffectcraftApp, ui: &mut egui::Ui, rect: Rect) {
     let panel_clip = ui.clip_rect();
     ui.set_clip_rect(body.intersect(panel_clip));
     let fx: Vec<PropGroup> = layer.effects().map(|f| f.groups().cloned().collect()).unwrap_or_default();
-    // A Map layer's view and style come first, like a built-in effect without fx/Reset menus.
-    let map = layer.props.sub("map").filter(|_| matches!(layer.source, effectcraft_engine::project::LayerSource::Map)).cloned();
+    // A Map, Route or Pin layer's own options come first, like a built-in effect without
+    // fx/Reset menus.
+    let (map_group, map_title) = match layer.source {
+        effectcraft_engine::project::LayerSource::Map => ("map", "Map"),
+        effectcraft_engine::project::LayerSource::Route => ("route", "Route"),
+        effectcraft_engine::project::LayerSource::Pin => ("pin", "Pin"),
+        _ => ("", ""),
+    };
+    let map = (!map_group.is_empty()).then(|| layer.props.sub(map_group).cloned()).flatten();
     if let Some(mg) = &map {
         let r = Rect::from_min_size(pos2(body.min.x, y), vec2(body.width(), ROW + 2.0));
         y += ROW + 2.0;
@@ -1153,9 +1160,9 @@ pub fn show(app: &mut EffectcraftApp, ui: &mut egui::Ui, rect: Rect) {
         if widgets::twirl(ui, tw, open, egui::Id::new(("ec-tw", mg.uid)), &t).clicked() {
             toggle_closed(app, mg, open, false);
         }
-        app.auto.add("effectControls.map.twirl", tw, "Map");
-        let name = bp.text(pos2(tw.max.x + 6.0, r.center().y), Align2::LEFT_CENTER, crate::i18n::tr("Map"), Tokens::semibold(12.0), t.text);
-        app.auto.add("effectControls.map", name, "Map");
+        app.auto.add("effectControls.map.twirl", tw, map_title);
+        let name = bp.text(pos2(tw.max.x + 6.0, r.center().y), Align2::LEFT_CENTER, crate::i18n::tr(map_title), Tokens::semibold(12.0), t.text);
+        app.auto.add("effectControls.map", name, map_title);
         if open {
             let scope = FxScope { effect: "", root: mg, path: String::new() };
             group_rows(app, ui, &bp, &layer, mg, &ectx, body, &mut y, 0, &scope, &mut actions);

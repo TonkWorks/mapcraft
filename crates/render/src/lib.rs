@@ -1319,6 +1319,8 @@ impl<'a> Renderer<'a> {
             LayerSource::Text => Some(self.authored(text::render(ctx, layer, self.raster_scale(ctx, layer)))),
             LayerSource::Shape => layer.props.sub("contents").map(|c| self.authored(shapes::render(ctx, layer, c, self.raster_scale(ctx, layer)))),
             LayerSource::Map => layer.props.sub("map").map(|g| self.authored(map::render(ctx, layer, g, self.raster_scale(ctx, layer)))),
+            LayerSource::Route => layer.props.sub("route").map(|g| self.authored(map::render_route(ctx, layer, g, self.raster_scale(ctx, layer)))),
+            LayerSource::Pin => layer.props.sub("pin").map(|g| self.authored(map::render_pin(ctx, layer, g, self.raster_scale(ctx, layer)))),
             _ => None,
         }
     }

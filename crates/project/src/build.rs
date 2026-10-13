@@ -760,6 +760,47 @@ pub fn map_options(ids: &mut Ids) -> PropGroup {
         .with(c(ids, "highlightColor", "Highlight Color", [0.86, 0.20, 0.16, 1.0]))
 }
 
+pub const ROUTE_PATHS: &[&str] = &["Great Circle", "Straight", "Arc"];
+pub const PIN_MARKERS: &[&str] = &["Dot", "Pin", "Ring", "None"];
+
+/// A Route layer's options: the Map layer it follows, its places (names or "lat, lon",
+/// separated by `;`), how it travels between them, trim (Start / End, for drawing on) and look.
+pub fn route_options(ids: &mut Ids) -> PropGroup {
+    ids.group("route", "Route")
+        .with(fixed(ids.prop("map", "Map Layer", Value::Layer(None)).with_ui(ParamUi::Layer)))
+        .with(fixed(ids.prop("places", "Places", Value::Str(String::new())).with_ui(ParamUi::Text)))
+        .with(ids.prop("path", "Path", Value::Enum(0)).with_ui(popup(ROUTE_PATHS)))
+        .with(ids.prop("arcHeight", "Arc Height", Value::Scalar(25.0)).with_ui(slider(-100.0, 100.0, -100.0, 100.0, 1)))
+        .with(ids.prop("start", "Start", Value::Scalar(0.0)).with_ui(slider(0.0, 100.0, 0.0, 100.0, 1)))
+        .with(ids.prop("end", "End", Value::Scalar(100.0)).with_ui(slider(0.0, 100.0, 0.0, 100.0, 1)))
+        .with(ids.prop("color", "Color", Value::Color([0.95, 0.24, 0.18, 1.0])).with_ui(ParamUi::Color))
+        .with(ids.prop("width", "Width", Value::Scalar(5.0)).with_ui(slider(0.0, 200.0, 0.0, 30.0, 1)))
+        .with(ids.prop("dashed", "Dashed", Value::Bool(false)))
+        .with(ids.prop("dash", "Dash Length", Value::Scalar(14.0)).with_ui(slider(1.0, 500.0, 1.0, 60.0, 1)))
+        .with(ids.prop("arrowhead", "Arrowhead", Value::Bool(true)))
+        .with(ids.prop("arrowSize", "Arrowhead Size", Value::Scalar(22.0)).with_ui(slider(0.0, 500.0, 0.0, 80.0, 1)))
+}
+
+/// A Pin layer's options: the Map layer it follows, its place, marker, label and Reveal (0–100%:
+/// the marker grows in and the label fades in).
+pub fn pin_options(ids: &mut Ids) -> PropGroup {
+    let c = |ids: &mut Ids, m: &str, n: &str, v: [f64; 4]| ids.prop(m, n, Value::Color(v)).with_ui(ParamUi::Color);
+    ids.group("pin", "Pin")
+        .with(fixed(ids.prop("map", "Map Layer", Value::Layer(None)).with_ui(ParamUi::Layer)))
+        .with(fixed(ids.prop("place", "Place", Value::Str(String::new())).with_ui(ParamUi::Text)))
+        .with(ids.prop("marker", "Marker", Value::Enum(0)).with_ui(popup(PIN_MARKERS)))
+        .with(ids.prop("size", "Marker Size", Value::Scalar(18.0)).with_ui(slider(0.0, 1000.0, 0.0, 80.0, 1)))
+        .with(c(ids, "color", "Marker Color", [0.95, 0.24, 0.18, 1.0]))
+        .with(c(ids, "outline", "Outline Color", [1.0, 1.0, 1.0, 1.0]))
+        .with(fixed(ids.prop("label", "Label", Value::Str(String::new())).with_ui(ParamUi::Text)))
+        .with(ids.prop("labelSize", "Label Size", Value::Scalar(36.0)).with_ui(slider(0.0, 1000.0, 6.0, 160.0, 1)))
+        .with(c(ids, "labelColor", "Label Color", [1.0, 1.0, 1.0, 1.0]))
+        .with(c(ids, "halo", "Halo Color", [0.05, 0.07, 0.10, 0.85]))
+        .with(ids.prop("haloWidth", "Halo Width", Value::Scalar(6.0)).with_ui(slider(0.0, 100.0, 0.0, 20.0, 1)))
+        .with(ids.prop("labelOffset", "Label Offset", Value::Vec2([18.0, 0.0])))
+        .with(ids.prop("reveal", "Reveal", Value::Scalar(100.0)).with_ui(slider(0.0, 100.0, 0.0, 100.0, 1)))
+}
+
 /// Geometry Options of a text or shape layer in an Advanced 3D comp (extrusion and bevels).
 pub fn extrusion_geometry_options(ids: &mut Ids) -> PropGroup {
     ids.group("geometryOptions", "Geometry Options")
@@ -790,7 +831,7 @@ pub fn default_label(src: &LayerSource, project: &Project) -> Label {
         LayerSource::Null => Label::Red,
         LayerSource::Camera | LayerSource::Light { .. } => Label::Pink,
         LayerSource::Model { .. } | LayerSource::Primitive { .. } => Label::Aqua,
-        LayerSource::Map => Label::SeaFoam,
+        LayerSource::Map | LayerSource::Route | LayerSource::Pin => Label::SeaFoam,
     }
 }
 
@@ -808,7 +849,9 @@ pub fn layer(project: &mut Project, comp: &Comp, name: &str, source: LayerSource
         | LayerSource::Light { .. }
         | LayerSource::Model { .. }
         | LayerSource::Primitive { .. }
-        | LayerSource::Map => [0.0, 0.0],
+        | LayerSource::Map
+        | LayerSource::Route
+        | LayerSource::Pin => [0.0, 0.0],
         LayerSource::Null => [50.0, 50.0],
         _ => [w / 2.0, h / 2.0],
     };
@@ -822,6 +865,12 @@ pub fn layer(project: &mut Project, comp: &Comp, name: &str, source: LayerSource
         }
         LayerSource::Map => {
             root.children.push(map_options(&mut ids).into());
+        }
+        LayerSource::Route => {
+            root.children.push(route_options(&mut ids).into());
+        }
+        LayerSource::Pin => {
+            root.children.push(pin_options(&mut ids).into());
         }
         _ => {}
     }

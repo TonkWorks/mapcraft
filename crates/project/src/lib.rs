@@ -683,6 +683,11 @@ pub enum LayerSource {
     /// A map: geography (the bundled world countries) drawn through an animatable view
     /// (centre, zoom, rotation, projection) in a comp-sized frame. Properties in `map`.
     Map,
+    /// A line between places (great circle, straight or arc) drawn through a Map layer's view,
+    /// with trim (draw-on), dashes and an arrowhead. Properties in `route`.
+    Route,
+    /// A marker and label at a place, following a Map layer's view. Properties in `pin`.
+    Pin,
 }
 
 impl LayerSource {
@@ -705,6 +710,8 @@ impl LayerSource {
             LayerSource::Model { .. } => "3D Model",
             LayerSource::Primitive { .. } => "3D Primitive",
             LayerSource::Map => "Map",
+            LayerSource::Route => "Route",
+            LayerSource::Pin => "Pin",
         }
     }
     /// Layers with pixels (cameras, lights and nulls have none).

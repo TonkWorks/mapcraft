@@ -17,11 +17,13 @@
 
 pub mod fly;
 pub mod geojson;
+pub mod places;
 
 use std::f64::consts::{FRAC_PI_4, PI, TAU};
 use std::sync::OnceLock;
 
 pub use geojson::{Feature, Geometry};
+pub use places::{Hit, lookup};
 
 /// `[longitude, latitude]` in degrees.
 pub type LonLat = [f64; 2];

@@ -1142,7 +1142,27 @@ pub fn show(app: &mut EffectcraftApp, ui: &mut egui::Ui, rect: Rect) {
     let panel_clip = ui.clip_rect();
     ui.set_clip_rect(body.intersect(panel_clip));
     let fx: Vec<PropGroup> = layer.effects().map(|f| f.groups().cloned().collect()).unwrap_or_default();
-    if fx.is_empty() {
+    // A Map layer's view and style come first, like a built-in effect without fx/Reset menus.
+    let map = layer.props.sub("map").filter(|_| matches!(layer.source, effectcraft_engine::project::LayerSource::Map)).cloned();
+    if let Some(mg) = &map {
+        let r = Rect::from_min_size(pos2(body.min.x, y), vec2(body.width(), ROW + 2.0));
+        y += ROW + 2.0;
+        let open = !app.ui.fx_closed.contains(&mg.uid);
+        bp.rect_filled(r, 0.0, t.fx_header);
+        let tw = Rect::from_center_size(pos2(r.min.x + 32.0, r.center().y), vec2(12.0, 12.0));
+        if widgets::twirl(ui, tw, open, egui::Id::new(("ec-tw", mg.uid)), &t).clicked() {
+            toggle_closed(app, mg, open, false);
+        }
+        app.auto.add("effectControls.map.twirl", tw, "Map");
+        let name = bp.text(pos2(tw.max.x + 6.0, r.center().y), Align2::LEFT_CENTER, crate::i18n::tr("Map"), Tokens::semibold(12.0), t.text);
+        app.auto.add("effectControls.map", name, "Map");
+        if open {
+            let scope = FxScope { effect: "", root: mg, path: String::new() };
+            group_rows(app, ui, &bp, &layer, mg, &ectx, body, &mut y, 0, &scope, &mut actions);
+        }
+        y += 4.0;
+    }
+    if fx.is_empty() && map.is_none() {
         bp.text(
             pos2(body.center().x, body.min.y + 40.0),
             Align2::CENTER_CENTER,

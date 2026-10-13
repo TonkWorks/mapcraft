@@ -91,10 +91,13 @@ pub fn render(ctx: &EvalCtx, layer: &Layer, g: &PropGroup, s: f64) -> Buf {
 
     let mut land_paths = Vec::new();
     let mut hi_paths = Vec::new();
-    for f in effectcraft_geo::world() {
+    for f in effectcraft_geo::world_at(v.detail()) {
         let hi = !hi_keys.is_empty() && hi_keys.iter().any(|k| f.iso.eq_ignore_ascii_case(k) || f.name.eq_ignore_ascii_case(k));
         for poly in &f.geometry.polygons {
             for ring in poly {
+                if !effectcraft_geo::path_bounds(ring).is_some_and(|b| v.may_show(b)) {
+                    continue;
+                }
                 if let Some(pts) = v.project_path(ring, true) {
                     let p = closed_path(&pts);
                     if hi {

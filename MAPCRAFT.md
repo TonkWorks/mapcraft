@@ -45,7 +45,7 @@ ISO 3166-1 alpha-3 codes.
 | Phase | Goal | Contents |
 |---|---|---|
 | 0. Spike ✅ | Prove the fork | `crates/geo`, Map layer source, world basemap, globe, `layer.newMap` / `map.set` / `map.flyTo`, native + web builds |
-| 1. Map core | Explainer-map comp | Level of detail (1:50m / 1:10m, then vector tiles), graticule, country lift / glow / shadow, routes that draw on, pins and labels with collision avoidance, place search, style presets, Map panel in the UI |
+| 1. Map core | Explainer-map comp | Level of detail (1:50m ✅; 1:10m, then vector tiles), graticule, country lift / glow / shadow, routes that draw on, pins and labels with collision avoidance, place search, style presets, Map panel in the UI |
 | 2. Battle kit | War-map comp by hand | NATO APP-6 unit symbols, tapered curved attack arrows, front lines with teeth, territory over a date timeline (polygon morphs), date → comp-time mapping, CSV / KML / GPX import |
 | 3. Spec + Map Studio | Easy editing | BattleMap Spec + compiler, a simple beat-list workspace (click to place units, drag arrows, paint territory), "Open in Timeline", YouTube export presets (16:9, Shorts 9:16, alpha) |
 | 4. AI | English → map | LLM tool calls over the spec (bring your own key; Claude by default), place lookup, follow-up edits ("slow the second beat"), a prompt eval set |

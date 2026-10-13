@@ -138,3 +138,29 @@ fn slerp_follows_the_great_circle() {
     assert!((m[0] - 45.0).abs() < 1e-9 && m[1].abs() < 1e-9);
     assert!((great_circle_deg([0.0, 0.0], [0.0, 90.0]) - 90.0).abs() < 1e-9);
 }
+
+#[test]
+fn detail_switches_with_zoom_and_50m_has_more_countries() {
+    let mut v = View::new([10.0, 50.0], 0.0, Projection::Equirectangular, 1920.0, 1080.0);
+    assert_eq!(v.detail(), Detail::Low);
+    v.zoom = 3.0;
+    assert_eq!(v.detail(), Detail::Medium);
+    assert!(world_at(Detail::Medium).len() > world_at(Detail::Low).len());
+    // Small countries only the 1:50m set has.
+    assert!(country("Singapore").is_some());
+    assert!(country("FRA").is_some());
+}
+
+#[test]
+fn may_show_culls_far_away_rings_only() {
+    let v = View::new([10.0, 50.0], 4.0, Projection::Mercator, 1920.0, 1080.0);
+    assert!(v.may_show([5.0, 45.0, 15.0, 55.0]));
+    assert!(!v.may_show([130.0, -40.0, 150.0, -20.0]), "Australia is off a Europe frame");
+    // Rotated and globe views never cull; nor do hostile bounds.
+    let mut r = v;
+    r.rotation = 30.0;
+    assert!(r.may_show([5.0, 45.0, 15.0, 55.0]));
+    let g = View::new([10.0, 50.0], 4.0, Projection::Orthographic, 1920.0, 1080.0);
+    assert!(g.may_show([130.0, -40.0, 150.0, -20.0]));
+    assert!(v.may_show([f64::NAN, 0.0, 1.0, 1.0]));
+}

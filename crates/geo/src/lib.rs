@@ -213,6 +213,29 @@ impl View {
         Some([lon, lat.to_degrees().clamp(-90.0, 90.0)])
     }
 
+    /// The outline detail this view should draw.
+    pub fn detail(&self) -> Detail {
+        if self.zoom.is_finite() && self.zoom >= MEDIUM_DETAIL_ZOOM { Detail::Medium } else { Detail::Low }
+    }
+
+    /// Whether any of a path with these bounds (`[west, south, east, north]`, degrees) can be in
+    /// the frame. Conservative: `true` when unsure (the globe, rotated views, paths wider than a
+    /// hemisphere).
+    pub fn may_show(&self, b: [f64; 4]) -> bool {
+        if self.projection == Projection::Orthographic || !b.iter().all(|v| v.is_finite()) || b[2] - b[0] > 180.0 {
+            return true;
+        }
+        let shift = self.nearest_shift((b[0] + b[2]) / 2.0);
+        let corners = [[b[0], b[1]], [b[2], b[1]], [b[0], b[3]], [b[2], b[3]]].map(|c| self.project_shifted(c, shift).xy);
+        let (mut x0, mut y0, mut x1, mut y1) = (f64::MAX, f64::MAX, f64::MIN, f64::MIN);
+        for [x, y] in corners {
+            (x0, y0, x1, y1) = (x0.min(x), y0.min(y), x1.max(x), y1.max(y));
+        }
+        // Rotation turns the box; widen the frame test by its diagonal so rotated views stay safe.
+        let m = if self.rotation.is_finite() && self.rotation != 0.0 { self.width.hypot(self.height) } else { 2.0 };
+        x1 >= -m && y1 >= -m && x0 <= self.width + m && y0 <= self.height + m
+    }
+
     /// Project a polygon ring or line into frame pixels. Long edges are subdivided along great
     /// circles on the globe (so they curve) and hidden stretches follow the horizon. A ring
     /// keeps one longitude copy for all its points on flat projections, so it doesn't tear.
@@ -288,18 +311,49 @@ pub fn slerp(a: LonLat, b: LonLat, t: f64) -> LonLat {
     lonlat([wa * u[0] + wb * v[0], wa * u[1] + wb * v[1], wa * u[2] + wb * v[2]])
 }
 
-/// The bundled Natural Earth 1:110m countries (public domain; `assets/geo`).
-pub fn world() -> &'static [Feature] {
-    static W: OnceLock<Vec<Feature>> = OnceLock::new();
-    W.get_or_init(|| geojson::parse(WORLD_GEOJSON).map(|r| r.features).unwrap_or_default())
+/// Bundled country outlines at two levels of detail (Natural Earth, public domain; `assets/geo`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Detail {
+    /// 1:110m: whole-world views.
+    Low,
+    /// 1:50m: continents and closer.
+    Medium,
 }
 
-static WORLD_GEOJSON: &str = include_str!("../../../assets/geo/ne_110m_countries.geojson");
+/// Views at this zoom and closer draw the 1:50m outlines.
+pub const MEDIUM_DETAIL_ZOOM: f64 = 1.5;
 
-/// The bundled country whose ISO 3166-1 alpha-3 code or name matches `key` (case-insensitive).
+/// The bundled countries at `detail`.
+pub fn world_at(detail: Detail) -> &'static [Feature] {
+    static LOW: OnceLock<Vec<Feature>> = OnceLock::new();
+    static MEDIUM: OnceLock<Vec<Feature>> = OnceLock::new();
+    let (cell, text) = match detail {
+        Detail::Low => (&LOW, WORLD_110M),
+        Detail::Medium => (&MEDIUM, WORLD_50M),
+    };
+    cell.get_or_init(|| geojson::parse(text).map(|r| r.features).unwrap_or_default())
+}
+
+/// The bundled Natural Earth 1:110m countries.
+pub fn world() -> &'static [Feature] {
+    world_at(Detail::Low)
+}
+
+static WORLD_110M: &str = include_str!("../../../assets/geo/ne_110m_countries.geojson");
+static WORLD_50M: &str = include_str!("../../../assets/geo/ne_50m_countries.geojson");
+
+/// The bundled country whose ISO 3166-1 alpha-3 code or name matches `key` (case-insensitive),
+/// from the 1:50m set (it has the small countries the 1:110m set leaves out).
 pub fn country(key: &str) -> Option<&'static Feature> {
     let k = key.trim();
-    world().iter().find(|f| f.iso.eq_ignore_ascii_case(k)).or_else(|| world().iter().find(|f| f.name.eq_ignore_ascii_case(k)))
+    let w = world_at(Detail::Medium);
+    w.iter().find(|f| f.iso.eq_ignore_ascii_case(k)).or_else(|| w.iter().find(|f| f.name.eq_ignore_ascii_case(k)))
+}
+
+/// `[west, south, east, north]` of a path's points; `None` when empty.
+pub fn path_bounds(pts: &[LonLat]) -> Option<[f64; 4]> {
+    let first = pts.first()?;
+    Some(pts.iter().fold([first[0], first[1], first[0], first[1]], |b, p| [b[0].min(p[0]), b[1].min(p[1]), b[2].max(p[0]), b[3].max(p[1])]))
 }
 
 /// Split a highlight list ("UKR, POL; Russia") into keys.

@@ -15,6 +15,7 @@ pub mod color;
 pub mod disk_cache;
 use color::Region;
 pub mod eval;
+pub mod map;
 pub mod masks;
 pub mod passes;
 pub mod shapes;
@@ -1317,6 +1318,7 @@ impl<'a> Renderer<'a> {
             }
             LayerSource::Text => Some(self.authored(text::render(ctx, layer, self.raster_scale(ctx, layer)))),
             LayerSource::Shape => layer.props.sub("contents").map(|c| self.authored(shapes::render(ctx, layer, c, self.raster_scale(ctx, layer)))),
+            LayerSource::Map => layer.props.sub("map").map(|g| self.authored(map::render(ctx, layer, g, self.raster_scale(ctx, layer)))),
             _ => None,
         }
     }

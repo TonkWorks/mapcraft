@@ -739,6 +739,27 @@ pub fn primitive_geometry_options(ids: &mut Ids, kind: crate::PrimitiveKind) -> 
     g
 }
 
+/// Popup options of a Map layer's Projection (the order of `effectcraft_geo::Projection::ALL`).
+pub const MAP_PROJECTIONS: &[&str] = &["Equirectangular", "Mercator", "Globe (Orthographic)"];
+
+/// A Map layer's options: the view (centre in longitude/latitude degrees, zoom as a power of
+/// two where 0 fits the world's width, rotation, projection), the look, and the countries to
+/// highlight (ISO 3166-1 alpha-3 codes or names, comma-separated).
+pub fn map_options(ids: &mut Ids) -> PropGroup {
+    let c = |ids: &mut Ids, m: &str, n: &str, v: [f64; 4]| ids.prop(m, n, Value::Color(v)).with_ui(ParamUi::Color);
+    ids.group("map", "Map")
+        .with(ids.prop("center", "Center (Lon, Lat)", Value::Vec2([0.0, 20.0])))
+        .with(ids.prop("zoom", "Zoom", Value::Scalar(0.0)).with_ui(slider(-4.0, 32.0, -1.0, 12.0, 2)))
+        .with(ids.prop("rotation", "Rotation", Value::Scalar(0.0)).with_ui(ParamUi::Angle))
+        .with(ids.prop("projection", "Projection", Value::Enum(0)).with_ui(popup(MAP_PROJECTIONS)))
+        .with(c(ids, "ocean", "Ocean Color", [0.09, 0.13, 0.19, 1.0]))
+        .with(c(ids, "land", "Land Color", [0.80, 0.76, 0.66, 1.0]))
+        .with(c(ids, "border", "Border Color", [0.35, 0.31, 0.26, 1.0]))
+        .with(ids.prop("borderWidth", "Border Width", Value::Scalar(1.0)).with_ui(slider(0.0, 100.0, 0.0, 10.0, 1)))
+        .with(fixed(ids.prop("highlight", "Highlight Countries", Value::Str(String::new())).with_ui(ParamUi::Text)))
+        .with(c(ids, "highlightColor", "Highlight Color", [0.86, 0.20, 0.16, 1.0]))
+}
+
 /// Geometry Options of a text or shape layer in an Advanced 3D comp (extrusion and bevels).
 pub fn extrusion_geometry_options(ids: &mut Ids) -> PropGroup {
     ids.group("geometryOptions", "Geometry Options")
@@ -769,6 +790,7 @@ pub fn default_label(src: &LayerSource, project: &Project) -> Label {
         LayerSource::Null => Label::Red,
         LayerSource::Camera | LayerSource::Light { .. } => Label::Pink,
         LayerSource::Model { .. } | LayerSource::Primitive { .. } => Label::Aqua,
+        LayerSource::Map => Label::SeaFoam,
     }
 }
 
@@ -785,7 +807,8 @@ pub fn layer(project: &mut Project, comp: &Comp, name: &str, source: LayerSource
         | LayerSource::Camera
         | LayerSource::Light { .. }
         | LayerSource::Model { .. }
-        | LayerSource::Primitive { .. } => [0.0, 0.0],
+        | LayerSource::Primitive { .. }
+        | LayerSource::Map => [0.0, 0.0],
         LayerSource::Null => [50.0, 50.0],
         _ => [w / 2.0, h / 2.0],
     };
@@ -796,6 +819,9 @@ pub fn layer(project: &mut Project, comp: &Comp, name: &str, source: LayerSource
         }
         LayerSource::Shape => {
             root.children.push(contents(&mut ids).into());
+        }
+        LayerSource::Map => {
+            root.children.push(map_options(&mut ids).into());
         }
         _ => {}
     }

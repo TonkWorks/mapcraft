@@ -17,6 +17,7 @@ cpal or muda. Everything in L0 to L4, the egui UI and the web app also build for
 |---|---|---|
 | L0 | `time` | `Tick` (254 016 000 000 per second), rational frame rates incl. NTSC, SMPTE and drop-frame timecode |
 | L0 | `geom` | Vectors, matrices, quaternions, the layer transform (anchor, position, scale, orientation, rotation) |
+| L0 | `geo` | Geography for Map layers: a lenient GeoJSON reader, equirectangular / Web Mercator / orthographic (globe) projections, the map view (centre, zoom, rotation), great-circle helpers, smooth fly-to camera paths (van Wijk & Nuij 2003), and the bundled Natural Earth 1:110m countries |
 | L0 | `color` | sRGB and linear, HSL/HSV, luminance, the 38 blend modes, label colors |
 | L0 | `vp9enc` | VP9 encoder (profile 0, 8-bit 4:2:0, key and inter frames with motion search, loop filter and rate control; lossless at quality 100) for WebM export, from the VP9 bitstream specification |
 | L0 | `opusenc` | Opus encoder: RFC 6716 SILK (NB/MB/WB), hybrid (SWB/FB) and CELT (FB) modes chosen by bitrate and application (audio / voice), 48 kHz 20 ms packets, mono/stereo, and the RFC 7845 `OpusHead`, for WebM export audio |

@@ -36,6 +36,7 @@ mod layer_time;
 pub(crate) mod link;
 mod liquify;
 mod lottie;
+pub(crate) mod map;
 pub mod markers;
 mod mask;
 pub mod mask_interp;
@@ -163,6 +164,7 @@ pub fn command_specs() -> &'static [CommandSpec] {
         v.extend(layer::specs());
         v.extend(styles::specs());
         v.extend(three_d::specs());
+        v.extend(map::specs());
         v.extend(model3d::specs());
         v.extend(rig3d::specs());
         v.extend(text_anim::specs());

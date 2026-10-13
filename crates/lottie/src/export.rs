@@ -404,6 +404,10 @@ impl Doc<'_> {
                 self.ex.warn(format!("{name}: 3D model layers are not part of Lottie (layer exported as a hidden null)"));
                 hidden = true;
             }
+            LayerSource::Map => {
+                self.ex.warn(format!("{name}: map layers are not part of Lottie yet (layer exported as a hidden null; pre-render it to footage)"));
+                hidden = true;
+            }
         }
         o.insert("ty".into(), json!(ty));
         if let Some(p) = l.parent.and_then(|p| comp.index_of(p)) {

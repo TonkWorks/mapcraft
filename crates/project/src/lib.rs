@@ -680,6 +680,9 @@ pub enum LayerSource {
     Primitive {
         kind: PrimitiveKind,
     },
+    /// A map: geography (the bundled world countries) drawn through an animatable view
+    /// (centre, zoom, rotation, projection) in a comp-sized frame. Properties in `map`.
+    Map,
 }
 
 impl LayerSource {
@@ -701,6 +704,7 @@ impl LayerSource {
             LayerSource::Light { .. } => "Light",
             LayerSource::Model { .. } => "3D Model",
             LayerSource::Primitive { .. } => "3D Primitive",
+            LayerSource::Map => "Map",
         }
     }
     /// Layers with pixels (cameras, lights and nulls have none).

@@ -37,6 +37,7 @@ iconography, images or other Adobe assets; open licences only; every asset attri
 | `crates/lottie/tests/fixtures/shapes-gradient.json` | EffectCraft contributors | Original work: hand-written Lottie test fixture (star, rectangle, gradient fill, dashed stroke, trim paths) | MIT OR Apache-2.0 |
 | `crates/lottie/tests/fixtures/precomp-matte-text.json` | EffectCraft contributors | Original work: hand-written Lottie test fixture (precomp, track matte, parented text) | MIT OR Apache-2.0 |
 | `crates/lottie/tests/fixtures/legacy-masks.json` | EffectCraft contributors | Original work: hand-written Lottie test fixture (legacy keyframes, masks) | MIT OR Apache-2.0 |
+| `assets/geo/ne_110m_countries.geojson` | Natural Earth | https://www.naturalearthdata.com (v5.1.2, Admin 0 – Countries 1:110m, reduced properties) | Public domain |
 | `crates/svg/tests/fixtures/basic-shapes.svg` | EffectCraft contributors | Original work: hand-written SVG test fixture (basic shapes, groups, transforms) | MIT OR Apache-2.0 |
 | `crates/svg/tests/fixtures/paths-gradients.svg` | EffectCraft contributors | Original work: hand-written SVG test fixture (path data, gradients, CSS, use) | MIT OR Apache-2.0 |
 | `crates/model/tests/fixtures/quad.gltf` | EffectCraft contributors | Original work: glTF 2.0 test fixture (textured quad, node hierarchy, translation animation; data URIs) | MIT OR Apache-2.0 |

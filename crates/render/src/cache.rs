@@ -551,7 +551,7 @@ fn key_any(ctx: &EvalCtx, layer: &Layer, scale: f64, draft: bool, blur: bool, fo
             let ItemKind::Solid(s) = &it.kind else { return None };
             hash_debug(&mut h, s);
         }
-        LayerSource::Text | LayerSource::Shape => {}
+        LayerSource::Text | LayerSource::Shape | LayerSource::Map => {}
         LayerSource::Footage { item } if footage => {
             let it = ctx.project.item(*item)?;
             let ItemKind::Footage(f) = &it.kind else { return None };

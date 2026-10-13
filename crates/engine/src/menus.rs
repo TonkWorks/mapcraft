@@ -731,6 +731,7 @@ Layer
     Camera... | layer.newCamera
     Null Object | layer.newNull
     Shape Layer | layer.newShape
+    Map | layer.newMap
     Adjustment Layer | layer.newAdjustment
     Content-Aware Fill Layer... | layer.newContentAwareFill
     Cube | layer.new3dPrimitive {"kind":"cube"}

@@ -14,6 +14,7 @@ repository = "https://github.com/storytold/effectcraft"
 # internal
 effectcraft-time = { path = "crates/time" }
 effectcraft-geom = { path = "crates/geom" }
+effectcraft-geo = { path = "crates/geo" }
 effectcraft-color = { path = "crates/color" }
 effectcraft-raster = { path = "crates/raster" }
 effectcraft-path = { path = "crates/path" }
